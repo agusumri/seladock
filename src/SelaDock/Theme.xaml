@@ -1,0 +1,98 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:views="clr-namespace:SelaDock.Views">
+
+    <views:BoolToVisibilityConverter x:Key="BoolToVis" />
+
+    <!-- Palette: a quiet, dark glass dock that reads as part of the desktop, not a window. -->
+    <Color x:Key="DockBgColor">#CC14151A</Color>
+    <SolidColorBrush x:Key="DockBg" Color="{StaticResource DockBgColor}" />
+    <SolidColorBrush x:Key="DockBorder" Color="#22FFFFFF" />
+    <SolidColorBrush x:Key="DockHighlight" Color="#14FFFFFF" />
+    <SolidColorBrush x:Key="Separator" Color="#33FFFFFF" />
+    <SolidColorBrush x:Key="RunningDot" Color="#E6FFFFFF" />
+    <SolidColorBrush x:Key="ActiveDot" Color="#FF6CA8FF" />
+    <SolidColorBrush x:Key="ClockText" Color="#F2FFFFFF" />
+    <SolidColorBrush x:Key="ClockSub" Color="#99FFFFFF" />
+    <SolidColorBrush x:Key="TipBg" Color="#F21B1C22" />
+    <SolidColorBrush x:Key="TipText" Color="#FFF4F5FA" />
+
+    <!-- Tooltip styled to match the dock rather than the default yellow OS tooltip. -->
+    <Style TargetType="ToolTip">
+        <Setter Property="Background" Value="{StaticResource TipBg}" />
+        <Setter Property="Foreground" Value="{StaticResource TipText}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="10,5" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="HasDropShadow" Value="False" />
+        <Setter Property="Placement" Value="Top" />
+        <Setter Property="VerticalOffset" Value="-8" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToolTip">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="7"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Dark context menu (right-click on dock icons) to match the dock theme. -->
+    <SolidColorBrush x:Key="MenuBg" Color="#F21B1C22" />
+    <SolidColorBrush x:Key="MenuHover" Color="#2EFFFFFF" />
+    <SolidColorBrush x:Key="MenuBorder" Color="#2AFFFFFF" />
+    <SolidColorBrush x:Key="MenuText" Color="#F4F5FA" />
+
+    <Style TargetType="MenuItem">
+        <Setter Property="Foreground" Value="{StaticResource MenuText}" />
+        <Setter Property="Padding" Value="10,5" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="Bd" Background="Transparent" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter ContentSource="Header" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource MenuHover}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="Separator">
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Margin" Value="6,4" />
+        <Setter Property="Background" Value="{StaticResource MenuBorder}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Separator">
+                    <Border Height="1" Background="{StaticResource MenuBorder}" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="ContextMenu">
+        <Setter Property="Foreground" Value="{StaticResource MenuText}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Background="{StaticResource MenuBg}"
+                            BorderBrush="{StaticResource MenuBorder}" BorderThickness="1"
+                            CornerRadius="10" Padding="4">
+                        <StackPanel IsItemsHost="True" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

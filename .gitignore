@@ -1,0 +1,25 @@
+# Build output
+bin/
+obj/
+dist/
+
+# Local analysis artifacts
+intip.html
+sela.html
+intip-style.css
+sela-page.html
+sela-site.css
+
+# Remotion video project
+video/node_modules/
+video/build/
+video/out/
+video/*.log
+video/*.out
+video/*.err
+video/b.out
+video/b.err
+
+# IDE
+.vs/
+*.user

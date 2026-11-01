@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SelaDock · An elegant, lightweight dock for Windows</title>
+  <meta name="description" content="SelaDock replaces the Windows taskbar with a quiet, dark dock: pinned apps, running windows, a tray flyout, and system info. Free and open source.">
+  <meta name="theme-color" content="#0E1116">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="SelaDock · An elegant, lightweight dock for Windows">
+  <meta property="og:description" content="A quiet, dark dock that replaces the Windows taskbar. Free and open source.">
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-row">
+      <a class="brand" href="#top">
+        <img src="assets/logo.svg" alt="" width="36" height="36">
+        <span>SelaDock</span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#motion">In motion</a>
+        <a href="#light">Light on your PC</a>
+        <a href="#get">Get it</a>
+      </nav>
+      <a class="btn btn-ghost nav-cta" href="https://github.com/agusumri/seladock" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="section hero" id="top">
+      <div class="wrap">
+        <div class="hero-copy">
+          <p class="eyebrow">Free and open source · for Windows</p>
+          <h1>A dock that replaces your taskbar, quietly.</h1>
+          <p class="lede">SelaDock sits at the bottom of your screen as a dark glass bar: your pinned apps, the windows you have open, a tray flyout, and the time. It hides the Windows taskbar while it runs, and gives it back when you quit.</p>
+          <p class="fine">Windows 10 and 11 (64-bit) · No .NET install needed · A separate app from the Sela notch</p>
+          <div class="cta hero-cta">
+            <a class="btn btn-primary" href="https://github.com/agusumri/seladock/releases" target="_blank" rel="noopener">Download</a>
+            <a class="btn btn-ghost" href="https://github.com/agusumri/seladock" target="_blank" rel="noopener">View source</a>
+          </div>
+        </div>
+
+        <!-- Animated dock mock -->
+        <figure class="stage" aria-label="A dark dock at the bottom of a Windows desktop, with app icons that magnify on hover">
+          <div class="desk">
+            <div class="desk-glow"></div>
+            <div class="dock" id="dock">
+              <span class="dk start" data-tip="Start"><b class="winlogo"></b></span>
+              <i class="sep"></i>
+              <span class="dk" data-tip="Files" style="--c1:#ffd56b;--c2:#f5a623"></span>
+              <span class="dk run" data-tip="Chrome" style="--c1:#5ec6ff;--c2:#4c9bff"></span>
+              <span class="dk run on" data-tip="Code" style="--c1:#67e8f9;--c2:#2b9fd8"></span>
+              <span class="dk" data-tip="Mail" style="--c1:#a0e7a0;--c2:#3ddc97"></span>
+              <span class="dk run" data-tip="Music" style="--c1:#ff9ad1;--c2:#e45bb0"></span>
+              <span class="dk" data-tip="Notes" style="--c1:#c9b6ff;--c2:#8a7bff"></span>
+              <i class="sep"></i>
+              <span class="dk sys" data-tip="Tray">^</span>
+              <span class="dk sys" data-tip="Wi-Fi">&#x1F4F6;</span>
+              <span class="dk sys" data-tip="Volume">&#x1F509;</span>
+              <span class="dk sys" data-tip="Battery">&#x1F50B;</span>
+              <span class="clock"><b>21:04</b><i>Sun, 1 Nov</i></span>
+            </div>
+          </div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section" id="features">
+      <div class="wrap">
+        <div class="section-head">
+          <p class="eyebrow">What it does</p>
+          <h2>Small bar, your whole desktop.</h2>
+          <p>Everything the taskbar gave you, in a dock that reads as part of the desktop.</p>
+        </div>
+        <ul class="grid">
+          <li class="card">
+            <h3>Your pinned apps</h3>
+            <p>On first run it imports the apps you already pinned to the taskbar. Drag an app onto the dock to pin it, drag an icon to reorder, right-click to unpin.</p>
+          </li>
+          <li class="card">
+            <h3>Running windows</h3>
+            <p>Open windows show as icons, grouped per app, with a dot underneath and a highlight for the active one. Click to focus or minimize.</p>
+          </li>
+          <li class="card">
+            <h3>Tray flyout</h3>
+            <p>The “^” button opens a dark popup of the apps running in the background, each one a click away from the foreground.</p>
+          </li>
+          <li class="card">
+            <h3>System at a glance</h3>
+            <p>Network, volume, and battery each have a button that opens the genuine Windows panel. The clock opens the calendar.</p>
+          </li>
+          <li class="card">
+            <h3>Replaces the taskbar</h3>
+            <p>Hides the Windows taskbar while it runs so nothing overlaps, and restores it when you quit. Reserve space or auto-hide, your choice.</p>
+          </li>
+          <li class="card">
+            <h3>Your size</h3>
+            <p>Auto fits the dock to your screen, or pick Small, Medium, or Large from the tray menu. Dark menus throughout, to match.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- In motion -->
+    <section class="section motion" id="motion">
+      <div class="wrap">
+        <div class="section-head center">
+          <p class="eyebrow">In motion</p>
+          <h2>Hover, and it lifts.</h2>
+          <p>Icons magnify under the pointer, running apps glow, and the dock slides away when you ask it to. Move your mouse across the dock below.</p>
+        </div>
+        <figure class="stage stage-lg">
+          <video
+            src="assets/media/seladock.mp4"
+            autoplay muted loop playsinline
+            poster="assets/media/seladock-poster.jpg"
+            aria-label="Animated walkthrough of the SelaDock dock: it slides in, icons magnify on hover, the tray flyout opens.">
+          </video>
+        </figure>
+        <p class="fine center note">This clip is generated with <a href="https://www.remotion.dev/" target="_blank" rel="noopener">Remotion</a>, rendered from React. Content was rephrased for compliance with licensing restrictions.</p>
+      </div>
+    </section>
+
+    <!-- Light on your PC -->
+    <section class="section" id="light">
+      <div class="wrap split">
+        <div class="split-copy">
+          <p class="eyebrow">Light on your PC</p>
+          <h2>Built to stay out of the way.</h2>
+          <p>SelaDock does no work while the desktop is idle. It listens for window events instead of polling, extracts each icon once, and wakes the clock about once a minute.</p>
+          <ul class="ticks">
+            <li>Event-driven window tracking, not a busy loop</li>
+            <li>Idle CPU effectively zero</li>
+            <li>A single self-contained <code>.exe</code>, no install of .NET</li>
+            <li>Runs for your account only, no admin rights</li>
+          </ul>
+        </div>
+        <ul class="stats">
+          <li><b>~0%</b><span>idle CPU</span></li>
+          <li><b>.NET 10</b><span>WPF, native Win32</span></li>
+          <li><b>MIT</b><span>open source</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Get it -->
+    <section class="section get" id="get">
+      <div class="wrap center">
+        <h2>Take the taskbar off your mind.</h2>
+        <p class="lede">Free and open source. Windows 10 or 11 (64-bit). You don’t need to install .NET.</p>
+        <div class="cta center-cta">
+          <a class="btn btn-primary" href="https://github.com/agusumri/seladock/releases" target="_blank" rel="noopener">Download</a>
+          <a class="btn btn-ghost" href="https://github.com/agusumri/seladock" target="_blank" rel="noopener">GitHub</a>
+        </div>
+        <p class="fine">Releases aren’t digitally signed yet, so Windows SmartScreen may warn you. Click <b>More info</b>, then <b>Run anyway</b>.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-row">
+      <p>© 2026 · SelaDock is free to use under the MIT license.</p>
+      <p class="footer-links">
+        <a href="https://github.com/agusumri/seladock" target="_blank" rel="noopener">Source</a>
+        <a href="https://github.com/agusumri/seladock/issues" target="_blank" rel="noopener">Report an issue</a>
+        <a href="https://agusumri.github.io/sela/" target="_blank" rel="noopener">Sela notch</a>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

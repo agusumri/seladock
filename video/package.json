@@ -1,0 +1,20 @@
+{
+  "name": "seladock-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Remotion project that renders the SelaDock motion clip for the landing page.",
+  "scripts": {
+    "preview": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts SelaDock ../docs/assets/media/seladock.mp4 --codec=h264"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.380",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "remotion": "4.0.380"
+  },
+  "devDependencies": {
+    "@types/react": "19.0.0",
+    "typescript": "5.6.3"
+  }
+}
