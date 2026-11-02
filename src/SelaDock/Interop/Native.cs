@@ -76,6 +76,12 @@ internal static class Native
     [DllImport("user32.dll")]
     public static extern nint GetForegroundWindow();
 
+    /// <summary>Lets the app we launch bring its own window to the front (ASFW_ANY = -1).</summary>
+    [DllImport("user32.dll")]
+    public static extern bool AllowSetForegroundWindow(int processId);
+
+    public const int ASFW_ANY = -1;
+
     [DllImport("user32.dll")]
     public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool attach);
 
@@ -203,9 +209,18 @@ internal static class Native
     public const uint ABM_SETPOS = 0x00000003;
     public const uint ABE_BOTTOM = 3;
 
+    [DllImport("user32.dll")]
+    public static extern bool SetWindowPos(nint hWnd, nint insertAfter, int x, int y, int cx, int cy, uint flags);
+
+    [DllImport("user32.dll")]
+    public static extern bool GetWindowRect(nint hWnd, out RECT rect);
+
+    public const uint SWP_NOZORDER = 0x0004;
+    public const uint SWP_NOACTIVATE = 0x0010;
+
     // ---- Message helpers ------------------------------------------------------------
 
-    [DllImport("kernel32.dll")]
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     public static extern uint RegisterWindowMessageW(string name);
 
     // ---- Taskbar (find it, so we can ask Windows to auto-hide it) --------------------
@@ -218,6 +233,8 @@ internal static class Native
 
     public const uint ABM_GETSTATE = 0x00000004;
     public const uint ABM_SETSTATE = 0x0000000A;
+
+
     public const int ABS_AUTOHIDE = 0x0000001;
     public const int ABS_ALWAYSONTOP = 0x0000002;
 

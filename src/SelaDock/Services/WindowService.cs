@@ -98,7 +98,8 @@ public sealed class WindowService : IDisposable
         // A genuine tray app keeps a top-level window that is currently hidden; pure console/helper
         // processes (node, python, compilers) own no top-level window at all, so they fall out here.
         var hasVisible = new HashSet<uint>();
-        var hiddenCandidate = new Dictionary<uint, nint>();
+        var candidates = new HashSet<uint>();
+        var target = new Dictionary<uint, nint>();
 
         Native.EnumWindows((h, _) =>
         {
@@ -108,25 +109,26 @@ public sealed class WindowService : IDisposable
             // Ignore tool windows (helper/overlay windows that aren't app windows).
             var ex = (long)Native.GetWindowLongPtr(h, Native.GWL_EXSTYLE);
             if ((ex & Native.WS_EX_TOOLWINDOW) != 0) return true;
-            if (Native.GetWindow(h, Native.GW_OWNER) != nint.Zero) return true; // owned popups
+            var owned = Native.GetWindow(h, Native.GW_OWNER) != nint.Zero;
 
-            if (Native.IsWindowVisible(h))
+            if (!owned)
             {
-                var len = Native.GetWindowTextLengthW(h);
-                if (len > 0) hasVisible.Add(pid); // a real, titled, visible window -> on the dock
+                if (!Native.IsWindowVisible(h)) candidates.Add(pid); // hidden top-level window -> tray candidate
+                else if (Native.GetWindowTextLengthW(h) > 0) hasVisible.Add(pid); // already on the dock
             }
-            else
-            {
-                // Remember one hidden top-level window per process as the activation target.
-                hiddenCandidate.TryAdd(pid, h);
-            }
+
+            // The window to show on click is the app's main window, which may be hidden or owned by
+            // a hidden parent (WPF/WinForms tray apps like Aruba VIA do this). Helper windows
+            // ("Hidden Window", 0x0 message sinks) are skipped: showing them does nothing visible.
+            if (!target.ContainsKey(pid) && LooksLikeMainWindow(h)) target[pid] = h;
             return true;
         }, nint.Zero);
 
         var result = new List<WindowInfo>();
-        foreach (var (pid, hwnd) in hiddenCandidate)
+        foreach (var pid in candidates)
         {
             if (hasVisible.Contains(pid)) continue; // already represented on the dock
+            var hwnd = target.GetValueOrDefault(pid);
 
             var path = ProcessPath(pid);
             if (string.IsNullOrEmpty(path) || !LooksLikeTrayApp(path)) continue;
@@ -141,6 +143,27 @@ public sealed class WindowService : IDisposable
             .Select(g => g.First())
             .OrderBy(w => w.Title, StringComparer.OrdinalIgnoreCase)
             .ToList();
+    }
+
+    private static readonly HashSet<string> HelperWindowTitles = new(StringComparer.Ordinal)
+    {
+        "Hidden Window", "MediaContextNotificationWindow", "SystemResourceNotifyWindow",
+        "DDE Server Window", "OfficePowerManagerWindow", "JUCEWindow",
+    };
+
+    /// <summary>A hidden window that is a real app window: captioned, titled, sized, not a known helper.</summary>
+    private static bool LooksLikeMainWindow(nint h)
+    {
+        const long WS_CAPTION = 0x00C00000;
+        var style = (long)Native.GetWindowLongPtr(h, Native.GWL_STYLE);
+        if ((style & WS_CAPTION) != WS_CAPTION) return false;
+        if (!Native.GetWindowRect(h, out var r) || r.Right - r.Left < 200 || r.Bottom - r.Top < 120) return false;
+        var len = Native.GetWindowTextLengthW(h);
+        if (len == 0) return false;
+        var sb = new StringBuilder(len + 1);
+        Native.GetWindowTextW(h, sb, sb.Capacity);
+        var title = sb.ToString();
+        return !HelperWindowTitles.Contains(title) && !title.StartsWith(".NET-", StringComparison.Ordinal);
     }
 
     // Keep genuine user apps, drop OS background processes. Tray apps run from Program Files or the
@@ -242,6 +265,30 @@ public sealed class WindowService : IDisposable
         {
             if (attached) Native.AttachThreadInput(self, fgThread, false);
         }
+    }
+
+    /// <summary>Show a window the app hid to the tray (SW_HIDE), then bring it to the front.</summary>
+    public static void ShowHidden(nint hWnd)
+    {
+        if (!Native.IsWindow(hWnd)) return;
+        if (!Native.IsWindowVisible(hWnd)) Native.ShowWindow(hWnd, Native.SW_SHOW);
+        Activate(hWnd);
+    }
+
+    /// <summary>The visible main window of any running instance of <paramref name="exePath"/>, if one exists.</summary>
+    public nint FindVisibleMainWindow(string exePath)
+    {
+        nint found = nint.Zero;
+        Native.EnumWindows((h, _) =>
+        {
+            if (!Native.IsWindowVisible(h) || !LooksLikeMainWindow(h)) return true;
+            Native.GetWindowThreadProcessId(h, out var pid);
+            if (pid == 0 || pid == _ownProcessId) return true;
+            if (!string.Equals(ProcessPath(pid), exePath, StringComparison.OrdinalIgnoreCase)) return true;
+            found = h;
+            return false;
+        }, nint.Zero);
+        return found;
     }
 
     /// <summary>Toggle: minimize the window if it is already the foreground window, else activate it.</summary>

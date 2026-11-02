@@ -11,7 +11,8 @@ public sealed class TrayIcon : IDisposable
     private readonly System.Drawing.Icon? _ownedIcon;
 
     public TrayIcon(Action toggleAutoHide, Func<bool> isAutoHide,
-        Action<DockSize> setSize, Func<DockSize> currentSize, Action exit)
+        Action<DockSize> setSize, Func<DockSize> currentSize,
+        Action toggleReserveSpace, Func<bool> isReserveSpace, Action exit)
     {
         _ownedIcon = LoadIcon();
 
@@ -43,7 +44,15 @@ public sealed class TrayIcon : IDisposable
         autoHide.Click += (_, _) => toggleAutoHide();
         menu.Items.Add(autoHide);
 
-        menu.Opening += (_, _) => autoHide.Checked = isAutoHide();
+        var reserve = new Forms.ToolStripMenuItem("Reserve space (apps stop above dock)") { CheckOnClick = true };
+        reserve.Click += (_, _) => toggleReserveSpace();
+        menu.Items.Add(reserve);
+
+        menu.Opening += (_, _) =>
+        {
+            autoHide.Checked = isAutoHide();
+            reserve.Checked = isReserveSpace();
+        };
 
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add(new Forms.ToolStripMenuItem("Quit SelaDock", null, (_, _) => exit()));

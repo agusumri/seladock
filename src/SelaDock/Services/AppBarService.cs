@@ -1,69 +1,55 @@
-using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Interop;
-using SelaDock.Interop;
 
 namespace SelaDock.Services;
 
 /// <summary>
-/// Registers the dock window as a bottom app bar so that maximized windows leave room for it,
-/// the same mechanism the Windows taskbar uses. When disabled the dock simply floats on top and
-/// windows can sit beneath it.
+/// Reserves screen space at the bottom (like the Windows taskbar) via a hidden app-bar window, so
+/// maximized windows stop above the dock. Reservation is best-effort: if the shell rejects it (for
+/// example while the taskbar is hidden, which makes Windows treat the whole screen as the work
+/// area), the dock simply floats over the bottom edge instead. Failures never crash the dock.
 /// </summary>
 public sealed class AppBarService : IDisposable
 {
-    private readonly Window _window;
-    private nint _hWnd;
-    private bool _registered;
+    private readonly Window _owner;
+    private AppBarWindow? _bar;
 
-    public AppBarService(Window window) => _window = window;
+    public AppBarService(Window owner) => _owner = owner;
 
-    /// <summary>Reserve a strip of <paramref name="heightPx"/> device pixels at the bottom of the primary screen.</summary>
-    public void Reserve(int heightPx)
+    /// <summary>
+    /// Reserve the strip and snap the owner window onto the exact device-pixel rectangle the shell
+    /// granted. Positioning in logical units can round half a pixel off at 125%/150% scaling, which
+    /// leaves a 1px row of the maximized window showing above the dock.
+    /// </summary>
+    public void Reserve(int heightLogical)
     {
-        _hWnd = new WindowInteropHelper(_window).Handle;
-        if (_hWnd == nint.Zero) return;
-
-        var data = new Native.APPBARDATA
+        try
         {
-            cbSize = Marshal.SizeOf<Native.APPBARDATA>(),
-            hWnd = _hWnd,
-            uEdge = Native.ABE_BOTTOM,
-        };
-
-        if (!_registered)
-        {
-            Native.SHAppBarMessage(Native.ABM_NEW, ref data);
-            _registered = true;
+            _bar ??= new AppBarWindow();
+            _bar.Show();
+            var rc = _bar.Reserve(heightLogical);
+            var hWnd = new System.Windows.Interop.WindowInteropHelper(_owner).Handle;
+            if (hWnd != nint.Zero && rc.Bottom > rc.Top)
+                Interop.Native.SetWindowPos(hWnd, nint.Zero, rc.Left, rc.Top, rc.Right - rc.Left,
+                    rc.Bottom - rc.Top, Interop.Native.SWP_NOZORDER | Interop.Native.SWP_NOACTIVATE);
         }
-
-        var screen = SystemParameters.WorkArea; // start from the current work area
-        int screenRight = (int)SystemParameters.PrimaryScreenWidth;
-        int screenBottom = (int)SystemParameters.PrimaryScreenHeight;
-
-        data.rc = new Native.RECT
+        catch (Exception ex) when (ex is EntryPointNotFoundException or InvalidOperationException)
         {
-            Left = 0,
-            Right = screenRight,
-            Top = screenBottom - heightPx,
-            Bottom = screenBottom,
-        };
-
-        Native.SHAppBarMessage(Native.ABM_QUERYPOS, ref data);
-        data.rc.Top = data.rc.Bottom - heightPx;
-        Native.SHAppBarMessage(Native.ABM_SETPOS, ref data);
+            // Shell rejected the reservation or the helper window couldn't register; fall back to
+            // a floating dock rather than crashing.
+            Remove();
+        }
     }
 
-    private void Remove()
+    public void Remove()
     {
-        if (!_registered || _hWnd == nint.Zero) return;
-        var data = new Native.APPBARDATA
+        if (_bar is null) return;
+        try
         {
-            cbSize = Marshal.SizeOf<Native.APPBARDATA>(),
-            hWnd = _hWnd,
-        };
-        Native.SHAppBarMessage(Native.ABM_REMOVE, ref data);
-        _registered = false;
+            _bar.Unregister();
+            _bar.Close();
+        }
+        catch (InvalidOperationException) { /* already closing */ }
+        _bar = null;
     }
 
     public void Dispose() => Remove();

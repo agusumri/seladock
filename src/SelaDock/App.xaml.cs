@@ -46,7 +46,8 @@ public partial class App : Application
             _settings.Save();
         }
 
-        // Hide the taskbar before the dock window is created/shown, so it never flashes at startup.
+        // Hide the taskbar before the dock is shown so it never flashes, and so the dock's app bar
+        // owns the bottom strip that maximized windows stop above.
         _taskbar = new TaskbarService();
         if (_settings.HideTaskbar) _taskbar.Hide();
 
@@ -68,6 +69,13 @@ public partial class App : Application
                 _dock.ApplySize();
             },
             currentSize: () => _settings.Size,
+            toggleReserveSpace: () =>
+            {
+                _settings.ReserveSpace = !_settings.ReserveSpace;
+                _settings.Save();
+                _dock.ApplyReserveSetting();
+            },
+            isReserveSpace: () => _settings.ReserveSpace,
             exit: () => Shutdown());
     }
 

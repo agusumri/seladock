@@ -7,6 +7,9 @@
     <!-- Palette: a quiet, dark glass dock that reads as part of the desktop, not a window. -->
     <Color x:Key="DockBgColor">#CC14151A</Color>
     <SolidColorBrush x:Key="DockBg" Color="{StaticResource DockBgColor}" />
+    <!-- Opaque version of the dock tone. Covers the ~7px frame overhang that maximized windows
+         paint below the work area, so it must not be translucent. -->
+    <SolidColorBrush x:Key="DockEdgeMask" Color="#FF14151A" />
     <SolidColorBrush x:Key="DockBorder" Color="#22FFFFFF" />
     <SolidColorBrush x:Key="DockHighlight" Color="#14FFFFFF" />
     <SolidColorBrush x:Key="Separator" Color="#33FFFFFF" />

@@ -25,7 +25,11 @@ public sealed class Settings
     /// <summary>Hide the dock off-screen until the pointer reaches the bottom edge.</summary>
     public bool AutoHide { get; set; }
 
-    /// <summary>Reserve screen space so maximized windows don't cover the dock.</summary>
+    /// <summary>
+    /// Reserve screen space (as an app bar) so maximized windows stop exactly above the dock,
+    /// just like the Windows taskbar. On by default so you can type and use apps without the dock
+    /// covering them. Turn off to let the dock float over full-screen windows instead.
+    /// </summary>
     public bool ReserveSpace { get; set; } = true;
 
     /// <summary>Hide the Windows taskbar (auto-hide) while the dock runs; restored on exit.</summary>

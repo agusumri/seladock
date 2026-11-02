@@ -27,6 +27,14 @@
 
     <!-- Outer grid fills the reserved strip; the dock pill is centred and slides on hover. -->
     <Grid x:Name="Root">
+        <!-- Hides the frame overhang of maximized windows at the top edge of the reserved strip.
+             Declared first so the pill and its shadow draw above it. Toggled in code-behind. -->
+        <Border x:Name="EdgeMask"
+                VerticalAlignment="Top"
+                Height="8"
+                Background="{StaticResource DockEdgeMask}"
+                IsHitTestVisible="False" />
+
         <Border x:Name="Pill"
                 VerticalAlignment="Bottom"
                 HorizontalAlignment="Center"

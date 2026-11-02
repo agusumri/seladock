@@ -22,7 +22,10 @@ public partial class DockWindow : Window
     private AppBarService? _appBar;
     private readonly TaskbarService _taskbar;
 
-    private int StripHeight => (int)Math.Round(_chrome.PlateSize + 32); // logical px reserved at bottom
+    // The strip reserved at the bottom matches the dock pill's real footprint so maximized windows
+    // stop snug above it (like the taskbar), with no large empty gap:
+    //   pill = plate + vertical padding (10) + border (2); plus the pill's bottom margin (8).
+    private int StripHeight => (int)Math.Round(_chrome.PlateSize + 12 + 8);
 
     public DockWindow(Settings settings, TaskbarService taskbar)
     {
@@ -52,12 +55,15 @@ public partial class DockWindow : Window
         MakeNonActivating();
 
         _appBar = new AppBarService(this);
-        ApplyReserve();
         ApplyAutoHide();
 
-        // Reserving the app-bar makes Explorer recompute the work area, which can briefly re-show
-        // the taskbar it was told to hide. Re-assert the hide once layout has settled.
-        if (_settings.HideTaskbar) RehideTaskbarSoon();
+        // Reserve space after the window is fully laid out, so the DPI and size are final. Doing it
+        // on a dispatcher callback (vs. inline in Loaded) is what makes the shell actually honor it.
+        Dispatcher.BeginInvoke(new Action(() =>
+        {
+            ApplyReserve();
+            if (_settings.HideTaskbar) RehideTaskbarSoon();
+        }), System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
     private void PlaceAcrossBottom()
@@ -82,8 +88,29 @@ public partial class DockWindow : Window
 
     public void ApplyReserve()
     {
+        UpdateEdgeMask();
         if (_settings.ReserveSpace && !_settings.AutoHide)
             _appBar?.Reserve(StripHeight);
+    }
+
+    /// <summary>The edge mask only matters when space is reserved (maximized windows overhang into the strip).</summary>
+    private void UpdateEdgeMask() =>
+        EdgeMask.Visibility = _settings.ReserveSpace && !_settings.AutoHide
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+    /// <summary>
+    /// Apply the current Reserve-space setting live. When off, the app bar is removed so maximized
+    /// windows use the full screen and the dock floats over them; when on, space is reserved again.
+    /// </summary>
+    public void ApplyReserveSetting()
+    {
+        // Rebuild the app bar cleanly so toggling off truly gives the reserved space back.
+        _appBar?.Dispose();
+        _appBar = new AppBarService(this);
+        UpdateEdgeMask();
+        if (_settings.ReserveSpace && !_settings.AutoHide)
+            _appBar.Reserve(StripHeight);
     }
 
     /// <summary>Re-resolve size after a settings change and relayout.</summary>
@@ -104,6 +131,7 @@ public partial class DockWindow : Window
         {
             _appBar?.Dispose();
             _appBar = new AppBarService(this);
+            UpdateEdgeMask();
             Slide(hidden: true);
             Root.MouseEnter += ShowOnHover;
         }
@@ -187,13 +215,12 @@ public partial class DockWindow : Window
                 FontSize = 12,
             });
         }
-        else
-        {
-            foreach (var app in apps)
-                panel.Children.Add(BuildTrayEntry(app));
-        }
 
-        var popup = new System.Windows.Controls.Primitives.Popup
+        System.Windows.Controls.Primitives.Popup? popup = null;
+        foreach (var app in apps)
+            panel.Children.Add(BuildTrayEntry(app, () => { if (popup is not null) popup.IsOpen = false; }));
+
+        popup = new System.Windows.Controls.Primitives.Popup
         {
             PlacementTarget = anchor,
             Placement = System.Windows.Controls.Primitives.PlacementMode.Top,
@@ -214,9 +241,13 @@ public partial class DockWindow : Window
         popup.IsOpen = true;
     }
 
-    private FrameworkElement BuildTrayEntry(Model.WindowInfo app)
+    private FrameworkElement BuildTrayEntry(Model.WindowInfo app, Action onPicked)
     {
-        var icon = _icons.ForWindow(app.Handle, app.ProcessPath);
+        // Tray apps without a main window share Handle == 0, so look their icon up by path; the
+        // per-window icon cache would otherwise hand every one of them the first app's icon.
+        var icon = app.Handle != nint.Zero
+            ? _icons.ForWindow(app.Handle, app.ProcessPath)
+            : _icons.ForPath(app.ProcessPath);
         var btn = new Border
         {
             Width = 32,
@@ -241,24 +272,56 @@ public partial class DockWindow : Window
         btn.MouseLeave += (_, _) => btn.Background = System.Windows.Media.Brushes.Transparent;
         btn.MouseLeftButtonUp += (_, _) =>
         {
-            if (app.Handle != nint.Zero) WindowService.Activate(app.Handle);
-            else TryShowProcessWindow(app.ProcessId);
+            onPicked();
+            OpenTrayApp(app);
         };
         return btn;
     }
 
-    private static void TryShowProcessWindow(uint pid)
+    /// <summary>
+    /// The app has no main window to show (it closed it to the tray, e.g. VPN clients). Launching
+    /// the exe again is what the shell's tray-icon click amounts to for single-instance apps: the
+    /// running instance receives the request and opens its window.
+    /// </summary>
+    private void OpenTrayApp(Model.WindowInfo app)
     {
-        // No cached window handle (fully background): best effort — re-launch brings most tray apps
-        // to the foreground, or does nothing harmful if they refuse a second instance.
+        // Already open but buried behind other windows (common after a relaunch): just raise it.
+        var open = _windows.FindVisibleMainWindow(app.ProcessPath);
+        if (open != nint.Zero) { WindowService.Activate(open); return; }
+
+        if (app.Handle != nint.Zero) { WindowService.ShowHidden(app.Handle); return; }
+
+        // No main window exists yet. Relaunch so the running instance opens one, then raise it:
+        // the app's own activation is usually blocked by Windows' foreground lock, so its window
+        // would otherwise open behind whatever is maximized.
+        Interop.Native.AllowSetForegroundWindow(Interop.Native.ASFW_ANY);
+        Relaunch(app.ProcessPath);
+
+        var tries = 0;
+        var poll = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+        poll.Tick += (_, _) =>
+        {
+            var h = _windows.FindVisibleMainWindow(app.ProcessPath);
+            if (h != nint.Zero) WindowService.Activate(h);
+            if (h != nint.Zero || ++tries >= 20) poll.Stop(); // give up after ~3 s
+        };
+        poll.Start();
+    }
+
+    private static void Relaunch(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return;
         try
         {
-            using var p = System.Diagnostics.Process.GetProcessById((int)pid);
-            if (p.MainWindowHandle != nint.Zero) WindowService.Activate(p.MainWindowHandle);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path)
+            {
+                UseShellExecute = true,
+                WorkingDirectory = System.IO.Path.GetDirectoryName(path) ?? string.Empty,
+            });
         }
-        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
         {
-            // Process gone: nothing to do.
+            // Launch refused (e.g. UAC cancelled): nothing else to do.
         }
     }
 
@@ -278,19 +341,9 @@ public partial class DockWindow : Window
         RehideTaskbarSoon();
     }
 
-    /// <summary>Opening Start / Quick Settings makes Windows re-show the taskbar; hide it again once
-    /// the flyout has appeared so it never flashes under the dock.</summary>
-    private void RehideTaskbarSoon()
-    {
-        if (!_settings.HideTaskbar) return;
-        var t = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(260) };
-        t.Tick += (_, _) =>
-        {
-            t.Stop();
-            _taskbar.Hide();
-        };
-        t.Start();
-    }
+    /// <summary>No-op now: TaskbarService re-hides the taskbar through a WinEvent hook the moment
+    /// Explorer shows it, so no timer is needed after opening Start/Quick Settings.</summary>
+    private void RehideTaskbarSoon() { }
 
     // ---- App item interaction ------------------------------------------------------
 
