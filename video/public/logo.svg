@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="SelaDock logo">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8AF5C6"/>
+      <stop offset="1" stop-color="#3DDC97"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="#141922" stroke="rgba(255,255,255,0.12)"/>
+  <!-- dock bar -->
+  <rect x="12" y="40" width="40" height="12" rx="6" fill="rgba(255,255,255,0.1)"/>
+  <circle cx="20" cy="46" r="3" fill="url(#g)"/>
+  <circle cx="30" cy="46" r="3" fill="#5ec6ff"/>
+  <circle cx="40" cy="46" r="3.6" fill="url(#g)"/>
+  <circle cx="40" cy="55" r="1.4" fill="#4C9BFF"/>
+</svg>

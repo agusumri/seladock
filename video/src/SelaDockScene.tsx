@@ -8,29 +8,7 @@ import {
   Easing,
 } from "remotion";
 
-/** Palette mirrors the app's Theme.xaml and the landing page. */
-const COLORS = {
-  bg0: "#0E1116",
-  bg1: "#1B2230",
-  dock: "rgba(20,21,26,0.86)",
-  dockBorder: "rgba(255,255,255,0.14)",
-  highlight: "rgba(255,255,255,0.10)",
-  accent: "#3DDC97",
-  text: "#F5F5F7",
-  sub: "rgba(255,255,255,0.6)",
-  activeDot: "#6CA8FF",
-};
-
-type App = { tip: string; c1: string; c2: string; running?: boolean; active?: boolean; glyph?: string };
-
-const APPS: App[] = [
-  { tip: "Files", c1: "#ffd56b", c2: "#f5a623" },
-  { tip: "Chrome", c1: "#5ec6ff", c2: "#4c9bff", running: true },
-  { tip: "Code", c1: "#67e8f9", c2: "#2b9fd8", running: true, active: true },
-  { tip: "Mail", c1: "#a0e7a0", c2: "#3ddc97" },
-  { tip: "Music", c1: "#ff9ad1", c2: "#e45bb0", running: true },
-  { tip: "Notes", c1: "#c9b6ff", c2: "#8a7bff" },
-];
+import { APPS, COLORS, FONT, type App } from "./theme";
 
 const SYS = ["^", "\u{1F4F6}", "\u{1F509}", "\u{1F50B}"];
 
@@ -87,7 +65,7 @@ export const SelaDockScene: React.FC = () => {
     <AbsoluteFill
       style={{
         background: `radial-gradient(1100px 620px at 50% -120px, rgba(61,220,151,0.13), transparent 70%), linear-gradient(180deg, ${COLORS.bg0} 0%, ${COLORS.bg1} 55%, ${COLORS.bg0} 100%)`,
-        fontFamily: "Segoe UI Variable Display, Segoe UI, system-ui, sans-serif",
+        fontFamily: FONT,
         overflow: "hidden",
       }}
     >

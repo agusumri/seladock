@@ -13,6 +13,19 @@ const chromiumOptions = { gl: "swiftshader" }; // software GL, no real GPU neede
 // shell download fails to install, but a local Chrome renders frames just as well.
 const browserExecutable = "C:/Program Files/Google/Chrome/Application/chrome.exe";
 
+// `node render.mjs` renders the landscape clip; `node render.mjs reels` renders the vertical one.
+const TARGETS = {
+  landscape: { id: "SelaDock", out: "../docs/assets/media/seladock.mp4" },
+  reels: { id: "SelaDockReels", out: "../docs/assets/media/seladock-reels.mp4" },
+};
+
+const targetName = process.argv[2] ?? "landscape";
+const target = TARGETS[targetName];
+if (!target) {
+  console.error(`Unknown target "${targetName}". Use one of: ${Object.keys(TARGETS).join(", ")}`);
+  process.exit(1);
+}
+
 const main = async () => {
   console.log("Bundling...");
   const serveUrl = await bundle({
@@ -23,13 +36,13 @@ const main = async () => {
 
   const composition = await selectComposition({
     serveUrl,
-    id: "SelaDock",
+    id: target.id,
     chromiumOptions,
     browserExecutable,
   });
   console.log(`Rendering ${composition.durationInFrames} frames...`);
 
-  const outPath = path.join(__dirname, "../docs/assets/media/seladock.mp4");
+  const outPath = path.join(__dirname, target.out);
   await renderMedia({
     composition,
     serveUrl,
