@@ -1,91 +1,121 @@
-# SelaDock
+<p align="center">
+  <a href="https://agusumri.github.io/seladock/"><img src="docs/assets/media/seladock-poster.jpg" alt="SelaDock: a dark glass dock at the bottom of a Windows desktop with a Start button, pinned apps, tray, system icons, and the clock" width="100%"></a>
+</p>
 
-An elegant, lightweight dock for Windows — a macOS-style app bar at the bottom of the
-screen. It is a **separate app** from the Sela notch, built on the same stack (.NET 10 WPF,
-self-contained single-file, Win32 interop, tray icon).
+<p align="center">
+  <img src="docs/assets/logo.svg" alt="SelaDock logo" width="96">
+</p>
 
-## What it does
+<h1 align="center">SelaDock</h1>
 
-- A dark, translucent, rounded dock pinned to the bottom of the primary screen, meant to
-  replace the Windows taskbar.
-- **Start button** opens the real Windows Start menu.
-- **Pinned apps**:
-  - On first run, the dock imports the apps you already pinned to the Windows taskbar.
-  - Right-click an icon → *Pin* / *Unpin*.
-  - **Drag an .exe or shortcut onto the dock** to pin it.
-  - **Drag a pinned icon** left/right to reorder; order persists.
-- **Running windows**: shows top-level (alt-tab style) windows, grouped per app.
-- **Click to focus / minimize**: click toggles the window; multiple windows cycle.
-- **Running + active indicators**: a dot under running apps, highlighted when active.
-- **"^" tray flyout**: a dark popup listing apps running in the background (the tray role),
-  each clickable to bring it forward. See the note on Windows 11 tray icons below.
-- **System indicators**: network, volume, and battery glyphs, each opening the genuine
-  Windows panel (Quick Settings, sound, battery).
-- **Clock**: time and date, updated once a minute; click opens the calendar.
-- **Dock size**: Auto (fits screen width) / Small / Medium / Large, from the tray menu.
-- **Hide the Windows taskbar** while running (fully hidden, not auto-hide, so Start no longer
-  makes it reappear). Restored on exit.
-- **Auto-hide the dock**: optional, from the tray menu.
-- **Dark menus**: the tray menu and right-click menus match the dock, not the light Windows style.
+<p align="center">
+  A dock that replaces your taskbar, quietly.<br>
+  A dark glass bar at the bottom of your Windows screen for your apps, open windows, tray, and the time.<br><br>
+  <a href="https://agusumri.github.io/seladock/"><b>Visit the website →</b></a>
+</p>
 
-### Windows 11 tray icons — important limitation
+<p align="center">
+  <a href="https://agusumri.github.io/seladock/"><img alt="Website" src="https://img.shields.io/badge/website-agusumri.github.io%2Fseladock-3DDC97"></a>
+  <a href="https://github.com/agusumri/seladock/releases"><img alt="Releases" src="https://img.shields.io/badge/download-releases-3DDC97"></a>
+  <img alt="Windows 10 and 11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-4C9BFF">
+  <img alt=".NET 10" src="https://img.shields.io/badge/.NET-10-4C9BFF">
+</p>
 
-On Windows 11 (build ~22000+), third-party tray icons (Discord, Steam, etc.) are no longer
-Win32 windows; the shell renders them with XAML Islands inside Explorer. There is **no supported
-way to move or re-host those icons** in another app's window. So the "^" flyout lists background
-*processes* the dock can activate, rather than re-hosting the actual tray icons. Battery, volume,
-and network keep their own dock buttons that open the real Windows panels.
+SelaDock sits at the bottom of your screen as a rounded, translucent bar. It shows your pinned apps, the windows you have open, a tray flyout, network, volume, battery, and the clock. While it runs, it hides the Windows taskbar, and it gives the taskbar back when you quit. It's a separate app from the [Sela](https://github.com/agusumri/sela) notch, built on the same stack.
 
-## Why it stays light
+<p align="center">
+  <a href="docs/assets/media/seladock.mp4"><b>▶ Watch the motion video</b></a>
+</p>
 
-- **Event-driven, not polling.** Window changes come from a `SetWinEventHook` out-of-context
-  hook, so the dock does no work while the desktop is idle.
-- **Icon cache.** Each app/window icon is extracted at most once and frozen for sharing.
-- **Minute-aligned clock.** The timer wakes roughly once a minute, not every second.
-- **Pure-XAML visuals.** GPU-composited; hover magnification is a cheap transform, no bitmaps.
+## Features
 
-Idle CPU measured at effectively ~0, private working set around 55 MB for the self-contained build.
+- **Replaces the taskbar**: the Windows taskbar stays hidden while SelaDock runs, even when you open Start, Quick Settings, or the calendar. Quit SelaDock and the taskbar comes back.
+- **Apps stop above the dock**: maximized windows end exactly at the top of the dock, like they do with the taskbar, so nothing you type is hidden behind it.
+- **Start button** that opens the real Windows Start menu.
+- **Pinned apps**: on first run, SelaDock copies the apps you pinned to the Windows taskbar. Drag an `.exe` or a shortcut onto the dock to pin it, drag a pinned icon to reorder it, and right-click to unpin.
+- **Open windows**: each app shows a dot when it's running and a highlight when it's active. Click to focus an app, click again to minimize it.
+- **Tray flyout**: the **^** button lists apps that run in the background, such as VPN clients and sync tools. Click one to bring its window forward.
+- **System buttons**: network, volume, and battery open the genuine Windows panels.
+- **Clock**: shows the time and date. Click it to open the calendar.
+- **Dark menus** that match the dock, for the tray menu and right-click menus.
+- **Sizes**: Auto (fits your screen), Small, Medium, or Large.
+- **Light on your PC**: SelaDock reacts to window events instead of polling, so it does almost no work while your desktop is idle.
 
-## Build & run
+## Download and run
+
+SelaDock runs on Windows 10 or 11 (64-bit). You don't need to install .NET.
+
+1. Open the [releases page](https://github.com/agusumri/seladock/releases) and download `SelaDock.exe`. If no release is published yet, [build it from source](#build-from-source).
+2. Run `SelaDock.exe`. The dock appears at the bottom of the screen, the Windows taskbar hides, and the SelaDock icon appears in the notification area.
+
+> [!NOTE]
+> Release files aren't digitally signed yet, so Windows SmartScreen might show a warning. Click **More info**, then **Run anyway**.
+
+To quit, right-click the SelaDock icon in the notification area, then click **Quit SelaDock**. The Windows taskbar comes back.
+
+## Use the dock
+
+Right-click the SelaDock icon in the notification area to change these options:
+
+| Option | What it does |
+| --- | --- |
+| **Dock size** | Sets the icon size: **Auto (fit screen)**, **Small**, **Medium**, or **Large**. |
+| **Auto-hide dock** | Slides the dock off screen until you point at the bottom edge. Maximized windows then use the full screen. |
+| **Reserve space (apps stop above dock)** | On by default. Turn it off to let maximized windows run under the dock. |
+| **Quit SelaDock** | Closes the dock and shows the Windows taskbar again. |
+
+Your settings and pinned apps are stored in `%APPDATA%\SelaDock\settings.json`. To reset SelaDock, quit it and delete that folder.
+
+### About tray icons on Windows 11
+
+Windows 11 draws third-party tray icons inside Explorer, and it offers no supported way for another app to show or click them. So the **^** flyout lists the background apps themselves instead of their tray icons. When you click one, SelaDock does one of the following:
+
+- If the app's window is open but behind other windows, SelaDock brings it to the front.
+- If the app hid its window, SelaDock shows it again.
+- If the app has no window yet, SelaDock starts the app again. Most tray apps allow only one copy, so the running copy opens its window.
+
+## For developers
+
+SelaDock is written in C# with WPF on .NET 10, and it talks to Windows through Win32 interop.
+
+| Folder | Contents |
+| --- | --- |
+| `src/SelaDock/Interop` | Win32 calls: window enumeration, focus, icons, app bar, event hooks |
+| `src/SelaDock/Services` | Windows and icons, taskbar hiding, reserved screen space, tray flyout, system panels, settings, tray menu |
+| `src/SelaDock/ViewModel` | Dock items (pinned, running, active), the clock, and system indicators |
+| `src/SelaDock/Views` | The dock window: layout, hover magnification, auto-hide, drag and drop |
+| `docs` | The website, published with GitHub Pages |
+| `video` | The [Remotion](https://www.remotion.dev/) project that renders the motion video |
+
+### Build from source
+
+Before you begin, install the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
+
+To build and start the dock, run the following commands:
 
 ```powershell
 dotnet build src/SelaDock/SelaDock.csproj
-dotnet run   --project src/SelaDock/SelaDock.csproj
+dotnet run --project src/SelaDock/SelaDock.csproj
 ```
 
-## Publish a single self-contained exe
+To create a single self-contained `SelaDock.exe` in `dist/publish`, run the following command:
 
 ```powershell
 dotnet publish src/SelaDock/SelaDock.csproj -p:PublishProfile=win-x64
-# output: dist/publish/SelaDock.exe
 ```
 
-## Project layout
+### Render the video
 
-```
-src/SelaDock/
-  Interop/Native.cs          Win32 P/Invoke surface (enumerate, focus, icons, appbar, winevent hook)
-  Model/WindowInfo.cs        A top-level window record
-  Services/
-    WindowService.cs         Enumerate windows + event-driven Changed notifications
-    IconService.cs           Window/exe icon extraction with caching
-    AppBarService.cs         Reserve screen space (SHAppBarMessage)
-    Settings.cs              JSON settings under %APPDATA%\SelaDock
-    SingleInstance.cs        One-dock-at-a-time mutex
-    TrayIcon.cs              Notification-area menu
-  ViewModel/
-    DockItem.cs              One dock button (pinned / running / active state)
-    DockViewModel.cs         Merge pinned apps + running windows into the item list
-    ClockViewModel.cs        Minute-aligned clock
-  Views/
-    DockWindow.xaml(.cs)     The dock window, hover magnification, auto-hide, placement
-    BoolToVisibilityConverter.cs
-  Theme.xaml                 Palette + tooltip style
+The video in `docs/assets/media` comes from the `video` project. To render it again, install [Node.js](https://nodejs.org/), then run the following commands:
+
+```powershell
+cd video
+npm install
+node render.mjs
 ```
 
-## Roadmap ideas
+## Ideas for later
 
-- Window thumbnail previews on hover (DWM thumbnails).
-- Drag-to-reorder pinned apps.
-- Multi-monitor placement and a settings window.
-- Optionally replace the Windows taskbar while running.
+- Window thumbnail previews on hover.
+- Multi-monitor placement.
+- A settings window.
