@@ -6,7 +6,8 @@
   "scripts": {
     "preview": "remotion studio src/index.ts",
     "render": "remotion render src/index.ts SelaDock ../docs/assets/media/seladock.mp4 --codec=h264",
-    "render:reels": "node render.mjs reels"
+    "render:reels": "node render.mjs reels",
+    "audio": "node scripts/make-audio.mjs"
   },
   "dependencies": {
     "@remotion/cli": "4.0.380",
